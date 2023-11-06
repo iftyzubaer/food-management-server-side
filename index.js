@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
 
     const foodCollection = client.db('foodDB').collection('food')
+    const foodRequestCollection = client.db('foodDB').collection('foodRequest')
 
     app.get('/food', async (req, res) =>{
       const cursor = foodCollection.find()
@@ -35,6 +36,18 @@ async function run() {
     app.post('/food', async (req, res) => {
       const newFood = req.body
       const result = await foodCollection.insertOne(newFood)
+      res.send(result)
+    })
+
+    app.get('/request', async (req, res) =>{
+      const cursor = foodRequestCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    app.post('/request', async (req, res) => {
+      const newRequest = req.body
+      const result = await foodRequestCollection.insertOne(newRequest)
       res.send(result)
     })
 
