@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
@@ -27,7 +27,7 @@ async function run() {
     const foodCollection = client.db('foodDB').collection('food')
     const foodRequestCollection = client.db('foodDB').collection('foodRequest')
 
-    app.get('/food', async (req, res) =>{
+    app.get('/food', async (req, res) => {
       const cursor = foodCollection.find()
       const result = await cursor.toArray()
       res.send(result)
@@ -39,7 +39,43 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/request', async (req, res) =>{
+    app.put('/food/:id', async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const updateFood = req.body
+      const updatedFood = {
+        $set: {
+          photo: updateFood.photo,
+          name: updateFood.name,
+          quantity: updateFood.quantity,
+          quantity: updateFood.quantity,
+          expiryDate: updateFood.expiryDate,
+          details: updateFood.details,
+          donarEmail: updateFood.donarEmail,
+          donarName: updateFood.donarName,
+          donarPhoto: updateFood.donarPhoto
+        }
+      }
+      const result = await foodCollection.updateOne(filter, updatedFood, options)
+      res.send(result)
+    })
+
+    app.get('/food/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await foodCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.delete('/food/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await foodCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.get('/request', async (req, res) => {
       const cursor = foodRequestCollection.find()
       const result = await cursor.toArray()
       res.send(result)
@@ -48,6 +84,13 @@ async function run() {
     app.post('/request', async (req, res) => {
       const newRequest = req.body
       const result = await foodRequestCollection.insertOne(newRequest)
+      res.send(result)
+    })
+
+    app.delete('/request/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await foodRequestCollection.deleteOne(query)
       res.send(result)
     })
 
